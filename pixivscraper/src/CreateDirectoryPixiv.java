@@ -14,11 +14,11 @@ public class CreateDirectoryPixiv {
 
     public CreateDirectoryPixiv(int id, String dir) throws IOException {
         createFolder(dir, id); 
-        newFolderDir = dir; 
+        this.newFolderDir = dir; 
     }
 
     public String getNewFolderDir() {
-        return newFolderDir;
+        return this.newFolderDir;
     }
 
     private void createFolder (String dir, int id) {
@@ -32,7 +32,7 @@ public class CreateDirectoryPixiv {
 
             Files.createDirectories(path);
 
-            System.out.println("Directory successfully created!");
+            System.out.println("Directory successfully created");
 
         } catch (IOException e) {
             System.err.println("Failed to create directory!" + e.getMessage());
