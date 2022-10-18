@@ -1,19 +1,14 @@
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.time.Duration;
 import java.util.List;
 import java.util.Set;
-
-import javax.imageio.ImageIO;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
+import java.util.Properties;
+import java.util.Scanner;
 
 import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -34,50 +29,62 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class ParseHtmlPixiv {
-    private String dir_ = "";
-    private String url_ = "";
-    private int id_ = -1;
     static WebDriver driver;
     static CreateDirectoryPixiv directory;
+    private Boolean loginSuccess = false;
     private String referer = "https://pixiv.net";
+    Properties prop = new Properties();
+    Scanner sc = new Scanner(System.in);
 
-    public ParseHtmlPixiv(int id, String dir) throws IOException {
-        this.id_ = id;
-        this.dir_ = dir;
+    public ParseHtmlPixiv() throws IOException {
         setup();
-        if(validateID(id)) {
-            directory = new CreateDirectoryPixiv(id, dir);
-            login();
+        loginWithConfig();
+        if(loginSuccess == false) {
+            System.out.println("Press any key to exit.");
+            sc.nextLine();
+            sc.close();
+            driver.quit();
+            System.exit(0);
         }
-        else {
-            System.out.println("ERROR: Invalid Id");
-        }
+        mainLoop();
+        sc.close();
+        driver.quit();
+        //directory = new CreateDirectoryPixiv(id, dir);
     }
 
-    public ParseHtmlPixiv(String url, String dir) throws IOException {
-        this.url_ = url;
-        this.dir_ = dir;
-        setup();
-        if(validateURL(url)) {
-            id_ = extractId(url);
-            CreateDirectoryPixiv cdp = new CreateDirectoryPixiv(id_, dir);
-            login();
+    private void mainLoop() throws IOException {
+        Boolean input_quit = false;
+        String userInput = "";
+        while(input_quit != true) {
+            System.out.println("Press 1 to download all posts from a Pixiv artist");
+            System.out.println("Press 0 to quit the program");
+            userInput = sc.nextLine();
+
+            if(Integer.parseInt(userInput) == 1) {
+                System.out.println("Enter Pixiv ID:");
+                userInput = sc.nextLine();
+
+                String url = "https://www.pixiv.net/users/" + userInput;
+                System.out.println(url);
+                if(!validateURL(url)) {
+                    System.out.println("ERROR: Invalid Pixiv ID");
+                }
+                else {
+                    String defaultDir = System.getProperty("user.home") + "/Downloads";
+                    //18385405
+                    CreateDirectoryPixiv cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), defaultDir);
+                    //downloadAllPosts(url);
+                }
+
+            }
+            else if(Integer.parseInt(userInput) == 0) {
+                input_quit = true;
+            }
+            else {
+                System.out.println("ERROR: Invalid Command");
+            }
         }
-        else {
-            System.out.println("ERROR: Invalid URL");
-        }
-    }
-
-    public String getDir() {
-        return this.dir_; 
-    }
-
-    public String getUrl() {
-        return this.url_;
-    }
-
-    public int getId() {
-        return this.id_;
+        return;
     }
 
     private void setup() {
@@ -91,47 +98,131 @@ public class ParseHtmlPixiv {
 
     }
     //login using username and password, then saves cookie info for easy auth in future logins
-    private Boolean login() throws IOException {
+    private Boolean login(String username, String password) throws IOException {
         driver.get("https://accounts.pixiv.net/login");
-        /* BufferedReader usernameReader = new BufferedReader(new InputStreamReader(System.in));
-        BufferedReader passwordReader = new BufferedReader(new InputStreamReader(System.in)); */
-
-        String username = "";
-        String password = "";
 
         try {
-            WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@autocomplete='username']")));
+            System.out.println("Logging in...");
+            WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(By.cssSelector(".sc-bn9ph6-6.degQSE")));
             
-            WebElement loginUserE = driver.findElement(By.xpath("//input[@autocomplete='username']"));//.sc-bn9ph6-6.degQSE
+            WebElement loginUserE = driver.findElement(By.cssSelector(".sc-bn9ph6-6.degQSE"));// //input[@autocomplete='username']
             loginUserE.sendKeys(username);
 
-            WebElement loginPassE = driver.findElement(By.xpath("//input[@autocomplete='current-password']"));//.sc-bn9ph6-6.hfoSmp
+            WebElement loginPassE = driver.findElement(By.cssSelector(".sc-bn9ph6-6.hfoSmp"));// //input[@autocomplete='current-password']
             loginPassE.sendKeys(password);
 
-            WebElement loginBtnE = driver.findElement(By.xpath("//button[text()='Login']")); //.sc-bdnxRM.jvCTkj.sc-dlnjwi.pKCsX.sc-2o1uwj-7.fguACh.sc-2o1uwj-7.fguACh
+            WebElement loginBtnE = driver.findElement(By.cssSelector(".sc-bdnxRM.jvCTkj.sc-dlnjwi.pKCsX.sc-2o1uwj-7.fguACh.sc-2o1uwj-7.fguACh")); //"//button[text()='Login']"
             loginBtnE.click();
 
             WebElement root = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.id("root"))); //verify login
             System.out.println("Login Successful");
+            return true;
         }
         catch (Exception e) {
-            driver.quit();
+            //driver.quit();
+            System.err.println(e);
             System.err.println("ERROR: Login Failed");
-            throw(e);
+            return false;
         }
-        return false;
+        
     }
 
-    private void editURL() {
-        if (this.url_.charAt(this.url_.length()-1) == '/') {
-            this.url_ = this.url_ + "illustrations";
+    private void loginWithConfig() throws IOException{
+        File configProp = new File(System.getProperty("user.dir") + "/config.properties");
+        String username = "";
+        String password = "";
+        //read from config properties file if exists, otherwise create one and populate it with user creds
+        if(!configProp.exists()) {
+            OutputStream output = null;
+            while(loginSuccess == false) {
+                System.out.println("Enter 0 to exit program");
+                System.out.println("Enter Username:");
+                username = sc.nextLine();
+
+                if(Integer.parseInt(username) == 0) {
+                    sc.close();
+                    driver.quit();
+                    System.exit(0);
+                }
+                System.out.println("Enter Password:");
+                password = sc.nextLine();
+
+                if(Integer.parseInt(password) == 0) {
+                    sc.close();
+                    driver.quit();
+                    System.exit(0);
+                }
+                loginSuccess = login(username, password);
+            }
+            try {
+                output = new FileOutputStream("config.properties");
+                prop.setProperty("username", username);
+                prop.setProperty("password", password);
+                prop.store(output, null);
+        
+                } catch (IOException io) {
+                    io.printStackTrace();
+                } finally {
+                    if (output != null) {
+                        try {
+                            System.out.println("Config File Successfully Created");
+                            output.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
         }
         else {
-            this.url_ = this.url_ + "/illustrations";
+            InputStream input = null;
+            try {
+               input = new FileInputStream("config.properties");
+                prop.load(input);
+                username = prop.getProperty("username");
+                password = prop.getProperty("password"); 
+                loginSuccess = login(username, password);
+                if(loginSuccess == false) {
+                    System.out.println("Likely ran into captcha request. If so, try again later");
+                    return;
+                }
+                
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            
         }
+        
     }
 
-    private void visitURL(String url) {
+    private String editURL(String url) {
+        if (url.charAt(url.length()-1) == '/') {
+            url = url + "illustrations";
+        }
+        else {
+            url = url+ "/illustrations";
+        }
+        return url;
+    }
+
+    private void getArtist() {
+        String url = "";
+        String dest = "";
+        
+    }
+    
+    private void downloadAllPosts(String url, String dest) {
+
+    }
+
+    private void visitPost(String url, String dest) {
 
     }
 
@@ -161,6 +252,7 @@ public class ParseHtmlPixiv {
                     //System.out.println(imgSrc);
                 } 
             }
+            driver.quit();
             
             //String imgSrc = img.getAttribute("href");
             //downloadImg(imgSrc, dest);
@@ -268,7 +360,7 @@ public class ParseHtmlPixiv {
     }
 
     private Boolean validateID(int id) throws IOException{
-        String url = "https://www.pixiv.net/en/users/" + Integer.toString(id);
+        String url = "https://www.pixiv.net/users/" + Integer.toString(id);
         System.out.println(url);
         try {
             driver.get(url);
