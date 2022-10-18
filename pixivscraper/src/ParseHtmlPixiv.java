@@ -39,6 +39,17 @@ public class ParseHtmlPixiv {
 
     public ParseHtmlPixiv() throws IOException {
         setup();
+        File configProp = new File(System.getProperty("user.dir") + "/config.properties");
+        InputStream input = null;
+        if(configProp.exists()) {
+            try {
+                input = new FileInputStream("config.properties");
+                prop.load(input);
+                
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
         loginWithConfig();
         //loginSuccess = true;
         if(loginSuccess == false) {
@@ -48,7 +59,15 @@ public class ParseHtmlPixiv {
             driver.quit();
             System.exit(0);
         }
+        
         mainLoop();
+        if (input != null) {
+            try {
+                input.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         sc.close();
         driver.quit();
     }
@@ -63,17 +82,25 @@ public class ParseHtmlPixiv {
 
             if(Integer.parseInt(userInput) == 1) {
                 System.out.println("Enter Pixiv ID:");
-                //userInput = "18385405";
                 userInput = sc.nextLine();
 
                 String url = "https://www.pixiv.net/users/" + userInput;
-                System.out.println(url);
+                //System.out.println(url);
                 if(!validateURL(url)) {
                     System.out.println("ERROR: Invalid Pixiv ID");
                 }
                 else {
+                    File configProp = new File(System.getProperty("user.dir") + "/config.properties");
                     String defaultDir = System.getProperty("user.home") + "/Downloads";
-                    CreateDirectoryPixiv cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), defaultDir);
+                    CreateDirectoryPixiv cdp = null;
+                    //System.out.println(prop.containsKey("folderPath"));
+                    if(!configProp.exists() || !prop.containsKey("folderPath")) {
+                        cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), defaultDir);
+                    }
+                    else {
+                        cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), prop.getProperty("folderPath"));
+                    }
+                    System.out.println(cdp.getNewFolderDir());
                     url = url + "/illustrations?p=1";
                     downloadAllPosts(url,cdp.getNewFolderDir(), 1);
                     System.out.println("All posts downloaded");
@@ -131,11 +158,11 @@ public class ParseHtmlPixiv {
     }
 
     private void loginWithConfig() throws IOException{
-        File configProp = new File(System.getProperty("user.dir") + "/config.properties");
+        File configProp = new File(System.getProperty("user.dir") + "/config.properties"); //checks for config file in same directory as jar file
         String username = "";
         String password = "";
         //read from config properties file if exists, otherwise create one and populate it with user creds
-        if(!configProp.exists()) {
+        if(!configProp.exists() || !prop.containsKey("username") || !prop.containsKey("password")) {
             OutputStream output = null;
             while(loginSuccess == false) {
                 System.out.println("Enter Username:");
@@ -166,10 +193,7 @@ public class ParseHtmlPixiv {
                 }
         }
         else {
-            InputStream input = null;
             try {
-               input = new FileInputStream("config.properties");
-                prop.load(input);
                 username = prop.getProperty("username");
                 password = prop.getProperty("password"); 
                 loginSuccess = login(username, password);
@@ -180,14 +204,6 @@ public class ParseHtmlPixiv {
                 
             } catch (IOException ex) {
                 ex.printStackTrace();
-            } finally {
-                if (input != null) {
-                    try {
-                        input.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
             }
             
         }
@@ -208,7 +224,7 @@ public class ParseHtmlPixiv {
             return;
         }
         List<String> postURLs = new ArrayList();
-        System.out.println(posts.size());
+        //System.out.println(posts.size());
         for(WebElement post:posts) {
             String postURL = post.getAttribute("href");
             postURLs.add(postURL);
@@ -229,14 +245,14 @@ public class ParseHtmlPixiv {
             WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.id("root")));
             List<WebElement> findBtn = driver.findElements(By.cssSelector(".sc-emr523-0.guczbC"));
             if(findBtn.size() == 0) {
-                System.out.println("Only one image in post");
+                //System.out.println("Only one image in post");
                 WebElement img = driver.findElement(By.cssSelector(".sc-1qpw8k9-3.eFhoug.gtm-expand-full-size-illust"));
                 String imgSrc = img.getAttribute("href");
                 downloadImg(imgSrc, dest);
                 return;
             }
             else {
-                System.out.println("Multiple images in post");
+                //System.out.println("Multiple images in post");
                 WebElement seeAll = driver.findElement((By.cssSelector(".sc-emr523-0.guczbC")));
                 seeAll.click();
                 wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".sc-1qpw8k9-0.eXiEBZ")));

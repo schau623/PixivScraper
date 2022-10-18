@@ -22,7 +22,7 @@ public class CreateDirectoryPixiv {
 
     private void createFolder (String dir, int id) {
         if(dir.charAt(dir.length()-1) != '/') { //add "/" to end of input directory to correctly create new folder
-                dir = dir + '/';
+                dir = dir + "/PixivScraper/";
             }
             dir = dir + Integer.toString(id);
             this.newFolderDir = dir; 
