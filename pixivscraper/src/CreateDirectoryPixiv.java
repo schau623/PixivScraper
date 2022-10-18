@@ -14,7 +14,6 @@ public class CreateDirectoryPixiv {
 
     public CreateDirectoryPixiv(int id, String dir) throws IOException {
         createFolder(dir, id); 
-        this.newFolderDir = dir; 
     }
 
     public String getNewFolderDir() {
@@ -26,7 +25,7 @@ public class CreateDirectoryPixiv {
                 dir = dir + '/';
             }
             dir = dir + Integer.toString(id);
-
+            this.newFolderDir = dir; 
         try {
             Path path = Paths.get(dir);
 

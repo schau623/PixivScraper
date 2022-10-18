@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.io.IOException;
@@ -39,6 +40,7 @@ public class ParseHtmlPixiv {
     public ParseHtmlPixiv() throws IOException {
         setup();
         loginWithConfig();
+        //loginSuccess = true;
         if(loginSuccess == false) {
             System.out.println("Press any key to exit.");
             sc.nextLine();
@@ -49,7 +51,6 @@ public class ParseHtmlPixiv {
         mainLoop();
         sc.close();
         driver.quit();
-        //directory = new CreateDirectoryPixiv(id, dir);
     }
 
     private void mainLoop() throws IOException {
@@ -62,6 +63,7 @@ public class ParseHtmlPixiv {
 
             if(Integer.parseInt(userInput) == 1) {
                 System.out.println("Enter Pixiv ID:");
+                //userInput = "18385405";
                 userInput = sc.nextLine();
 
                 String url = "https://www.pixiv.net/users/" + userInput;
@@ -71,9 +73,10 @@ public class ParseHtmlPixiv {
                 }
                 else {
                     String defaultDir = System.getProperty("user.home") + "/Downloads";
-                    //18385405
                     CreateDirectoryPixiv cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), defaultDir);
-                    //downloadAllPosts(url);
+                    url = url + "/illustrations?p=1";
+                    downloadAllPosts(url,cdp.getNewFolderDir(), 1);
+                    System.out.println("All posts downloaded");
                 }
 
             }
@@ -201,29 +204,27 @@ public class ParseHtmlPixiv {
         }
         
     }
-
-    private String editURL(String url) {
-        if (url.charAt(url.length()-1) == '/') {
-            url = url + "illustrations";
-        }
-        else {
-            url = url+ "/illustrations";
-        }
-        return url;
-    }
-
-    private void getArtist() {
-        String url = "";
-        String dest = "";
-        
-    }
     
-    private void downloadAllPosts(String url, String dest) {
-
-    }
-
-    private void visitPost(String url, String dest) {
-
+    private void downloadAllPosts(String url, String dest, int page) {
+        driver.get(url);
+        WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//section[@class='sc-jgyytr-0 buukZm']")));
+        List<WebElement> posts = driver.findElements(By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-iJCRrE hizmCn']"));
+        if(posts.size() == 0) {
+            return;
+        }
+        List<String> postURLs = new ArrayList();
+        System.out.println(posts.size());
+        for(WebElement post:posts) {
+            String postURL = post.getAttribute("href");
+            postURLs.add(postURL);
+        }
+        //System.out.println(postURLs.toString());
+        for(String postURL : postURLs) {
+            downloadPost(postURL,dest);
+        }
+        url = url.substring(0, url.length()-1) + (page+=1);
+        //System.out.println(url + ", " + page);
+        downloadAllPosts(url, dest, page);
     }
 
     public void downloadPost(String url, String dest) {
@@ -237,6 +238,7 @@ public class ParseHtmlPixiv {
                 WebElement img = driver.findElement(By.cssSelector(".sc-1qpw8k9-3.eFhoug.gtm-expand-full-size-illust"));
                 String imgSrc = img.getAttribute("href");
                 downloadImg(imgSrc, dest);
+                return;
             }
             else {
                 System.out.println("Multiple images in post");
@@ -251,8 +253,9 @@ public class ParseHtmlPixiv {
                     downloadImg(imgSrc, dest);
                     //System.out.println(imgSrc);
                 } 
+                return;
             }
-            driver.quit();
+            //driver.quit();
             
             //String imgSrc = img.getAttribute("href");
             //downloadImg(imgSrc, dest);
@@ -287,6 +290,11 @@ public class ParseHtmlPixiv {
                 fileName = imgSrc.charAt(i) + fileName;
                 i--;
             }
+        }
+        File f = new File(dest + "/" + fileName);
+        if(f.exists()) {
+            System.out.println("File Already Exists");
+            return;
         }
         HttpClient client = HttpClientBuilder.create().build();
         //System.out.println(client);
