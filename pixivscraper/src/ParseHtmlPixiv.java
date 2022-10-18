@@ -93,7 +93,7 @@ public class ParseHtmlPixiv {
     private void setup() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        //options.addArguments("--headless"); //disable browser window
+        options.addArguments("--headless"); //disable browser window
         driver = new ChromeDriver(options);
         
         //WebDriverManager.firefoxdriver().setup();
@@ -138,29 +138,18 @@ public class ParseHtmlPixiv {
         if(!configProp.exists()) {
             OutputStream output = null;
             while(loginSuccess == false) {
-                System.out.println("Enter 0 to exit program");
                 System.out.println("Enter Username:");
                 username = sc.nextLine();
 
-                if(Integer.parseInt(username) == 0) {
-                    sc.close();
-                    driver.quit();
-                    System.exit(0);
-                }
                 System.out.println("Enter Password:");
                 password = sc.nextLine();
 
-                if(Integer.parseInt(password) == 0) {
-                    sc.close();
-                    driver.quit();
-                    System.exit(0);
-                }
                 loginSuccess = login(username, password);
             }
             try {
                 output = new FileOutputStream("config.properties");
-                prop.setProperty("username", username);
                 prop.setProperty("password", password);
+                prop.setProperty("username", username);
                 prop.store(output, null);
         
                 } catch (IOException io) {
@@ -207,7 +196,13 @@ public class ParseHtmlPixiv {
     
     private void downloadAllPosts(String url, String dest, int page) {
         driver.get(url);
-        WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//section[@class='sc-jgyytr-0 buukZm']")));
+        //WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//section[@class='sc-jgyytr-0 buukZm']")));
+        try {
+            WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-iJCRrE hizmCn']")));
+        }
+        catch(Exception e) {
+            return;
+        }
         List<WebElement> posts = driver.findElements(By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-iJCRrE hizmCn']"));
         if(posts.size() == 0) {
             return;
