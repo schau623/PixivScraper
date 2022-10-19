@@ -3,6 +3,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.openqa.selenium.support.ui.ExpectedCondition;
+
 /*
  * Creates a new folder at the specified directory
  * Folder name is based off the Pixiv id found in the url
@@ -33,7 +35,7 @@ public class CreateDirectoryPixiv {
 
             System.out.println("Directory successfully created");
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("Failed to create directory!" + e.getMessage());
             System.exit(0);
         }

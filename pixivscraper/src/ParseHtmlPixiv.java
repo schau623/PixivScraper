@@ -56,6 +56,7 @@ public class ParseHtmlPixiv {
             System.out.println("Press any key to exit.");
             sc.nextLine();
             sc.close();
+            //driver.close();
             driver.quit();
             System.exit(0);
         }
@@ -69,7 +70,9 @@ public class ParseHtmlPixiv {
             }
         }
         sc.close();
+        //driver.close();
         driver.quit();
+        System.exit(0);
     }
 
     private void mainLoop() throws IOException {
@@ -282,6 +285,7 @@ public class ParseHtmlPixiv {
             //System.out.println("GET");
         }
         catch (Exception e) {
+            driver.close();
             driver.quit();
             System.err.println(e);
         }
