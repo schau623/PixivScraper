@@ -55,6 +55,16 @@ Downloads all posts (saved as image files) from a specified Pixiv account using 
 </li>
 </ul>
 
+## Notes <br>
+<ul>
+<li>
+Sometimes attempts to login will fail. This is likely due to captcha checks. If this occurs, try logging in again or wait a while before attempting another login.
+</li>
+<li>
+Avoid downloading too many images (hundreds - thousands) in one session as making an excessive amount of requests may result in a temporary or even permanent I.P. ban.
+</li>
+</ul>
+
 ## Requirement(s) <br>
 <ul>
 <li><a href="https://www.java.com/en/")>Java version 8</a></li> <br>
