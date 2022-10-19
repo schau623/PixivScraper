@@ -55,6 +55,11 @@ Downloads all posts (saved as image files) from a specified Pixiv account using 
 </li>
 </ul>
 
+## Requirement(s) <br>
+<ul>
+<li><a href="https://www.java.com/en/")>Java version 8</a></li> <br>
+</ul>
+
 ## Created Using:
 <ul>
 <li>
