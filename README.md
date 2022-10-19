@@ -51,7 +51,7 @@ User login with username and password <br>
 Saves user login credentials in a properties file on local storage for automatic login <br>
 </li>
 <li>
-Downloads all posts (saved as image files) from a specified Pixiv account using their Pixiv id <br>
+Downloads all illustrations (saved as image files) from a specified Pixiv account using their Pixiv id <br>
 </li>
 </ul>
 
