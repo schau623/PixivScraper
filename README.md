@@ -8,18 +8,32 @@ Image scraper program that automatically downloads images from Pixiv, a popular 
 ## How to Use
 <ul>
 <li>
-Download PixivScraper.jar file
+Download PixivScraper.jar
 </li>
 <li>
 Open command line tool and navigate to .jar file directory
 </li>
 <li>
 In command line, type: </li>
-</ul> <br>
+</ul>
 
 ```
 java -jar PixivScraper.jar
 ```
+<br>
+You can set a custom download directory in the config.properties file by adding a new property called "folderPath".
+<br>
+<br>
+Example:
+
+```
+folderPath=C:/User/[User Name]/[Your Path Here]
+```
+<ul>
+<li>
+Note: replace any "\" with "/".
+</li>
+</ul>
 
 ## Features <br>
 <ul>
