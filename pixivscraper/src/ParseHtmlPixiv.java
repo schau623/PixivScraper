@@ -120,7 +120,7 @@ public class ParseHtmlPixiv {
     private void setup() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        //options.addArguments("--headless"); //disable browser window
+        options.addArguments("--headless"); //disable browser window
         driver = new ChromeDriver(options);
         
         //WebDriverManager.firefoxdriver().setup();
