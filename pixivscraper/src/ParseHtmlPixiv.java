@@ -27,16 +27,19 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class ParseHtmlPixiv {
-    static WebDriver driver;
-    static CreateDirectoryPixiv directory;
+    private static WebDriver driver;
+    private CreateDirectoryPixiv directory = null;
     private Boolean loginSuccess = false;
+    private Boolean hasCreatedFolder = false;
+    private File configProp = null;
+    private String defaultDir = System.getProperty("user.home") + "/Downloads";
     private String referer = "https://pixiv.net";
     Properties prop = new Properties();
     Scanner sc = new Scanner(System.in);
 
     public ParseHtmlPixiv() throws IOException {
         setup();
-        File configProp = new File(System.getProperty("user.dir") + "/config.properties");
+        configProp = new File(System.getProperty("user.dir") + "/config.properties");
         InputStream input = null;
         if(configProp.exists()) {
             try {
@@ -53,7 +56,6 @@ public class ParseHtmlPixiv {
             //System.out.println("Press any key to exit.");
             //sc.nextLine();
             sc.close();
-            //driver.close();
             driver.quit();
             System.exit(0);
         }
@@ -75,14 +77,13 @@ public class ParseHtmlPixiv {
     private void mainLoop() throws IOException {
         Boolean input_quit = false;
         String userInput = "";
-        File configProp = new File(System.getProperty("user.dir") + "/config.properties");
-        String defaultDir = System.getProperty("user.home") + "/Downloads";
-        CreateDirectoryPixiv cdp = null;
+        configProp = new File(System.getProperty("user.dir") + "/config.properties");
 
-        while(input_quit != true) {
-            System.out.println("Press 1 to download all posts from a Pixiv artist");
-            System.out.println("Press 2 to download recent posts from artists you're following (first 3 pages or 180 posts)");
-            System.out.println("Press 0 to quit the program");
+        while(input_quit == false) {
+            hasCreatedFolder = false;
+            System.out.println("Enter 1 to download all posts from a Pixiv artist");
+            System.out.println("Enter 2 to download recent posts from artists you're following (first 3 pages or 180 posts)");
+            System.out.println("Enter 0 to quit the program");
             userInput = sc.nextLine();
 
             switch(Integer.parseInt(userInput)){
@@ -95,8 +96,13 @@ public class ParseHtmlPixiv {
                     break;
                 }
                 case 1: {
+                    System.out.println("Enter 0 to return to main menu");
                     System.out.println("Enter Pixiv ID:");
                     userInput = sc.nextLine();
+
+                    if(Integer.parseInt(userInput) == 0) {
+                        break;
+                    }
 
                     String url = "https://www.pixiv.net/users/" + userInput;
                     //System.out.println(url);
@@ -104,35 +110,52 @@ public class ParseHtmlPixiv {
                         System.out.println("ERROR: Invalid Pixiv ID");
                     }
                     else {
-                        
-                        //System.out.println(prop.containsKey("folderPath"));
-                        if(!configProp.exists() || !prop.containsKey("folderPath")) {
-                            cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), defaultDir);
-                        }
-                        else {
-                            cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), prop.getProperty("folderPath"));
-                        }
-                        System.out.println(cdp.getNewFolderDir());
                         url = url + "/illustrations?p=1";
-                        downloadAllPosts(url,cdp.getNewFolderDir(), 1, "artist");
+                        //System.out.println(prop.containsKey("folderPath"));
+                        hasCreatedFolder = true;
+                        createFolder(userInput);
+                        
+                        downloadAllPosts(url,directory.getNewFolderDir(), 1, "artist");
                         System.out.println("All posts downloaded");
                     }
                     break;
                 }
                 case 2: {
-                    String recent = "Recent Works";
-                    String url = "https://www.pixiv.net/bookmark_new_illust.php?p=1";
-
-                    //System.out.println(prop.containsKey("folderPath"));
-                    if(!configProp.exists() || !prop.containsKey("folderPath")) {
-                        cdp = new CreateDirectoryPixiv(recent, defaultDir);
+                    Boolean loopRecent = false;
+                    while(loopRecent == false) {
+                        String url = "https://www.pixiv.net/bookmark_new_illust.php?p=1";
+                        System.out.println("Enter 1 to download images in separate folders (by Pixiv ID)");
+                        System.out.println("Enter 2 to download images in one folder");
+                        System.out.println("Enter 0 to return to main menu");
+                        userInput = sc.nextLine();
+                        
+                        switch(Integer.parseInt(userInput)) {
+                            default: {
+                                System.out.println("Invalid command");
+                                break;
+                            }
+                            case 0: {
+                                loopRecent = true;
+                                break;
+                            }
+                            case 1: {
+                                loopRecent = true;
+                                downloadAllPosts(url,"", 1, "recent");
+                                break;
+                            }
+                            case 2: {
+                                String recent = "Recent Works";
+                                //System.out.println(prop.containsKey("folderPath"));
+                                hasCreatedFolder = true;
+                                createFolder(recent);
+                                
+                                downloadAllPosts(url,directory.getNewFolderDir(), 1, "recent");
+                                System.out.println("All posts downloaded");
+                                loopRecent = true;
+                                break;
+                            }
+                        }
                     }
-                    else {
-                        cdp = new CreateDirectoryPixiv(recent, prop.getProperty("folderPath"));
-                    }
-                    System.out.println(cdp.getNewFolderDir());
-                    downloadAllPosts(url,cdp.getNewFolderDir(), 1, "recent");
-                    System.out.println("All posts downloaded");
                     break;
                 }
             }
@@ -148,17 +171,17 @@ public class ParseHtmlPixiv {
                 else {
                     File configProp = new File(System.getProperty("user.dir") + "/config.properties");
                     String defaultDir = System.getProperty("user.home") + "/Downloads";
-                    CreateDirectoryPixiv cdp = null;
+                    CreateDirectoryPixiv directory = null;
                     //System.out.println(prop.containsKey("folderPath"));
                     if(!configProp.exists() || !prop.containsKey("folderPath")) {
-                        cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), defaultDir);
+                        directory = new CreateDirectoryPixiv(Integer.parseInt(userInput), defaultDir);
                     }
                     else {
-                        cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), prop.getProperty("folderPath"));
+                        directory = new CreateDirectoryPixiv(Integer.parseInt(userInput), prop.getProperty("folderPath"));
                     }
-                    System.out.println(cdp.getNewFolderDir());
+                    System.out.println(directory.getNewFolderDir());
                     url = url + "/illustrations?p=1";
-                    downloadAllPosts(url,cdp.getNewFolderDir(), 1);
+                    downloadAllPosts(url,directory.getNewFolderDir(), 1);
                     System.out.println("All posts downloaded");
                 }
 
@@ -268,6 +291,22 @@ public class ParseHtmlPixiv {
         }
         
     }
+
+    private void createFolder(String name) throws IOException  {
+        try { 
+            if(!configProp.exists() || !prop.containsKey("folderPath")) {
+                directory = new CreateDirectoryPixiv(name, defaultDir);
+            }
+            else {
+                directory = new CreateDirectoryPixiv(name, prop.getProperty("folderPath"));
+            }
+            System.out.println(directory.getNewFolderDir());
+        }
+        catch (IOException e) {
+        }
+        return;
+        
+    }
     
     private void downloadAllPosts(String url, String dest, int page, String type) {
         driver.get(url);
@@ -291,6 +330,7 @@ public class ParseHtmlPixiv {
             if(page >= 2) {
                 return;
             }
+
             try {
                 WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated
                 (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-iJCRrE hizmCn']")));
@@ -300,6 +340,7 @@ public class ParseHtmlPixiv {
             }
             posts = driver.findElements
             (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-iJCRrE hizmCn']"));
+
             if(posts.size() == 0) {
                 return;
             }
@@ -353,10 +394,18 @@ public class ParseHtmlPixiv {
 
     private void downloadPost(String url, String dest) {
         driver.get(url);
+        
         try {
             //WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".sc-1qpw8k9-3.eFhoug.gtm-expand-full-size-illust")));
             WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until
             (ExpectedConditions.visibilityOfElementLocated(By.id("root")));
+
+            if(hasCreatedFolder == false) {
+                WebElement findName = driver.findElement(By.xpath("//a[@class='sc-d98f2c-0 sc-10gpz4q-6 MJMrP']"));
+                String id = findName.getAttribute("data-gtm-value");
+                createFolder(id);
+                dest = directory.getNewFolderDir();
+            }
 
             List<WebElement> findBtn = driver.findElements(By.cssSelector(".sc-emr523-0.guczbC"));
             if(findBtn.size() == 0) {

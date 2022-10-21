@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 public class CreateDirectoryPixiv {
     private String newFolderDir = "";
 
-    public CreateDirectoryPixiv(int id, String dir) throws IOException {
+   /*  public CreateDirectoryPixiv(int id, String dir) throws IOException {
         if(dir.charAt(dir.length()-1) != '/') { //add "/" to end of input directory to correctly create new folder
                 dir = dir + "/PixivScraper/";
         }
@@ -20,7 +20,7 @@ public class CreateDirectoryPixiv {
         this.newFolderDir = dir; 
         createFolder(dir); 
     }
-
+ */
     public CreateDirectoryPixiv(String name, String dir) throws IOException {
         if(dir.charAt(dir.length()-1) != '/') { //add "/" to end of input directory to correctly create new folder
                 dir = dir + "/PixivScraper/";
