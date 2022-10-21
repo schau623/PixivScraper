@@ -13,19 +13,29 @@ public class CreateDirectoryPixiv {
     private String newFolderDir = "";
 
     public CreateDirectoryPixiv(int id, String dir) throws IOException {
-        createFolder(dir, id); 
+        if(dir.charAt(dir.length()-1) != '/') { //add "/" to end of input directory to correctly create new folder
+                dir = dir + "/PixivScraper/";
+        }
+        dir = dir + Integer.toString(id);
+        this.newFolderDir = dir; 
+        createFolder(dir); 
     }
+
+    public CreateDirectoryPixiv(String name, String dir) throws IOException {
+        if(dir.charAt(dir.length()-1) != '/') { //add "/" to end of input directory to correctly create new folder
+                dir = dir + "/PixivScraper/";
+        }
+        dir = dir + name;
+        this.newFolderDir = dir; 
+        createFolder(dir); 
+    }
+
 
     public String getNewFolderDir() {
         return this.newFolderDir;
     }
-
-    private void createFolder (String dir, int id) {
-        if(dir.charAt(dir.length()-1) != '/') { //add "/" to end of input directory to correctly create new folder
-                dir = dir + "/PixivScraper/";
-            }
-            dir = dir + Integer.toString(id);
-            this.newFolderDir = dir; 
+    
+    private void createFolder(String dir) {
         try {
             Path path = Paths.get(dir);
 

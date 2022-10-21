@@ -75,12 +75,68 @@ public class ParseHtmlPixiv {
     private void mainLoop() throws IOException {
         Boolean input_quit = false;
         String userInput = "";
+        File configProp = new File(System.getProperty("user.dir") + "/config.properties");
+        String defaultDir = System.getProperty("user.home") + "/Downloads";
+        CreateDirectoryPixiv cdp = null;
+
         while(input_quit != true) {
             System.out.println("Press 1 to download all posts from a Pixiv artist");
+            System.out.println("Press 2 to download recent posts from artists you're following (first 3 pages or 180 posts)");
             System.out.println("Press 0 to quit the program");
             userInput = sc.nextLine();
 
-            if(Integer.parseInt(userInput) == 1) {
+            switch(Integer.parseInt(userInput)){
+                default: {
+                    System.out.println("ERROR: Invalid Command");
+                    break;
+                }
+                case 0: {
+                    input_quit = true;
+                    break;
+                }
+                case 1: {
+                    System.out.println("Enter Pixiv ID:");
+                    userInput = sc.nextLine();
+
+                    String url = "https://www.pixiv.net/users/" + userInput;
+                    //System.out.println(url);
+                    if(!validateURL(url)) {
+                        System.out.println("ERROR: Invalid Pixiv ID");
+                    }
+                    else {
+                        
+                        //System.out.println(prop.containsKey("folderPath"));
+                        if(!configProp.exists() || !prop.containsKey("folderPath")) {
+                            cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), defaultDir);
+                        }
+                        else {
+                            cdp = new CreateDirectoryPixiv(Integer.parseInt(userInput), prop.getProperty("folderPath"));
+                        }
+                        System.out.println(cdp.getNewFolderDir());
+                        url = url + "/illustrations?p=1";
+                        downloadAllPosts(url,cdp.getNewFolderDir(), 1, "artist");
+                        System.out.println("All posts downloaded");
+                    }
+                    break;
+                }
+                case 2: {
+                    String recent = "Recent Works";
+                    String url = "https://www.pixiv.net/bookmark_new_illust.php?p=1";
+
+                    //System.out.println(prop.containsKey("folderPath"));
+                    if(!configProp.exists() || !prop.containsKey("folderPath")) {
+                        cdp = new CreateDirectoryPixiv(recent, defaultDir);
+                    }
+                    else {
+                        cdp = new CreateDirectoryPixiv(recent, prop.getProperty("folderPath"));
+                    }
+                    System.out.println(cdp.getNewFolderDir());
+                    downloadAllPosts(url,cdp.getNewFolderDir(), 1, "recent");
+                    System.out.println("All posts downloaded");
+                    break;
+                }
+            }
+            /* if(Integer.parseInt(userInput) == 1) {
                 System.out.println("Enter Pixiv ID:");
                 userInput = sc.nextLine();
 
@@ -112,7 +168,7 @@ public class ParseHtmlPixiv {
             }
             else {
                 System.out.println("ERROR: Invalid Command");
-            }
+            } */
         }
         return;
     }
@@ -135,13 +191,16 @@ public class ParseHtmlPixiv {
             System.out.println("Logging in...");
             WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.elementToBeClickable(By.cssSelector(".sc-bn9ph6-6.degQSE")));
             
-            WebElement loginUserE = driver.findElement(By.cssSelector(".sc-bn9ph6-6.degQSE"));// //input[@autocomplete='username']
+            WebElement loginUserE = driver.findElement
+            (By.cssSelector(".sc-bn9ph6-6.degQSE"));// //input[@autocomplete='username']
             loginUserE.sendKeys(username);
 
-            WebElement loginPassE = driver.findElement(By.cssSelector(".sc-bn9ph6-6.hfoSmp"));// //input[@autocomplete='current-password']
+            WebElement loginPassE = driver.findElement
+            (By.cssSelector(".sc-bn9ph6-6.hfoSmp"));// //input[@autocomplete='current-password']
             loginPassE.sendKeys(password);
 
-            WebElement loginBtnE = driver.findElement(By.cssSelector(".sc-bdnxRM.jvCTkj.sc-dlnjwi.pKCsX.sc-2o1uwj-7.fguACh.sc-2o1uwj-7.fguACh")); //"//button[text()='Login']"
+            WebElement loginBtnE = driver.findElement
+            (By.cssSelector(".sc-bdnxRM.jvCTkj.sc-dlnjwi.pKCsX.sc-2o1uwj-7.fguACh.sc-2o1uwj-7.fguACh")); //"//button[text()='Login']"
             loginBtnE.click();
 
             WebElement root = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.id("root"))); //verify login
@@ -210,16 +269,70 @@ public class ParseHtmlPixiv {
         
     }
     
-    private void downloadAllPosts(String url, String dest, int page) {
+    private void downloadAllPosts(String url, String dest, int page, String type) {
         driver.get(url);
-        //WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//section[@class='sc-jgyytr-0 buukZm']")));
+        List<WebElement> posts = null;
+        if(type == "artist") {
+            //WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//section[@class='sc-jgyytr-0 buukZm']")));
+            try {
+                WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated
+                (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-iJCRrE hizmCn']")));
+            }
+            catch(Exception e) {
+                return;
+            }
+            posts = driver.findElements
+            (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-iJCRrE hizmCn']"));
+            if(posts.size() == 0) {
+                return;
+            } 
+        }
+        else if(type == "recent") {
+            if(page >= 2) {
+                return;
+            }
+            try {
+                WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated
+                (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-iJCRrE hizmCn']")));
+            }
+            catch(Exception e) {
+                return;
+            }
+            posts = driver.findElements
+            (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-iJCRrE hizmCn']"));
+            if(posts.size() == 0) {
+                return;
+            }
+        }
+        List<String> postURLs = new ArrayList();
+        //System.out.println(posts.size());
+        for(WebElement post:posts) {
+            String postURL = post.getAttribute("href");
+            postURLs.add(postURL);
+        }
+        //System.out.println(postURLs.toString());
+        for(String postURL : postURLs) {
+            downloadPost(postURL,dest);
+        }
+        url = url.substring(0, url.length()-1) + (page+=1);
+        //System.out.println(url + ", " + page);
+        downloadAllPosts(url, dest, page, type);
+    }
+
+    /* private void downloadRecent(String url, String dest, int page) {
+        driver.get(url);
+        if(page >= 6) {
+            return;
+        }
         try {
-            WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-iJCRrE hizmCn']")));
+            WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated
+            (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-iJCRrE hizmCn']")));
         }
         catch(Exception e) {
             return;
         }
-        List<WebElement> posts = driver.findElements(By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-iJCRrE hizmCn']"));
+        List<WebElement> posts = driver.findElements
+        (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-iJCRrE hizmCn']"));
         if(posts.size() == 0) {
             return;
         }
@@ -236,27 +349,36 @@ public class ParseHtmlPixiv {
         url = url.substring(0, url.length()-1) + (page+=1);
         //System.out.println(url + ", " + page);
         downloadAllPosts(url, dest, page);
-    }
+    } */
 
     private void downloadPost(String url, String dest) {
         driver.get(url);
         try {
             //WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".sc-1qpw8k9-3.eFhoug.gtm-expand-full-size-illust")));
-            WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.id("root")));
+            WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until
+            (ExpectedConditions.visibilityOfElementLocated(By.id("root")));
+
             List<WebElement> findBtn = driver.findElements(By.cssSelector(".sc-emr523-0.guczbC"));
             if(findBtn.size() == 0) {
                 //System.out.println("Only one image in post");
-                WebElement img = driver.findElement(By.cssSelector(".sc-1qpw8k9-3.eFhoug.gtm-expand-full-size-illust"));
+                WebElement img = driver.findElement
+                (By.cssSelector(".sc-1qpw8k9-3.eFhoug.gtm-expand-full-size-illust"));
+
                 String imgSrc = img.getAttribute("href");
                 downloadImg(imgSrc, dest);
-                return;
             }
             else {
                 //System.out.println("Multiple images in post");
-                WebElement seeAll = driver.findElement((By.cssSelector(".sc-emr523-0.guczbC")));
+                WebElement seeAll = driver.findElement
+                ((By.cssSelector(".sc-emr523-0.guczbC")));
+
                 seeAll.click();
-                wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".sc-1qpw8k9-0.eXiEBZ")));
-                List<WebElement> imgs = driver.findElements(By.xpath("//*[@class='sc-1qpw8k9-3 eFhoug gtm-expand-full-size-illust']"));
+                wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until
+                (ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".sc-1qpw8k9-0.eXiEBZ")));
+
+                List<WebElement> imgs = driver.findElements
+                (By.xpath("//*[@class='sc-1qpw8k9-3 eFhoug gtm-expand-full-size-illust']"));
+
                 //System.out.println(imgs.size());
                 for(WebElement img : imgs) {
                     //System.out.println(img.getTagName());
@@ -264,8 +386,9 @@ public class ParseHtmlPixiv {
                     downloadImg(imgSrc, dest);
                     //System.out.println(imgSrc);
                 } 
-                return;
             }
+            System.out.println("Post Downloaded");
+            return;
             //driver.quit();
             
             //String imgSrc = img.getAttribute("href");
@@ -385,7 +508,10 @@ public class ParseHtmlPixiv {
         System.out.println(url);
         try {
             driver.get(url);
-            WebElement username = driver.findElement(By.xpath("//h1[@class='sc-1bcui9t-5 ibhMns']"));
+
+            WebElement username = driver.findElement
+            (By.xpath("//h1[@class='sc-1bcui9t-5 ibhMns']"));
+
             WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOf(username));
             //driver.quit();
             System.out.println("ID successfully validated");
