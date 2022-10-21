@@ -67,16 +67,17 @@ Avoid downloading too many images (hundreds - thousands) in one session as makin
 
 ## Requirement(s) <br>
 <ul>
-<li><a href="https://www.java.com/en/")>Java version 8</a></li> <br>
+<li><a href="https://www.java.com/en/")>Java version 8</a></li>
+<li><a href ="https://www.google.com/chrome/" >Google Chrome</a>
 </ul>
 
 ## Created Using:
 <ul>
 <li>
-<a href="https://www.java.com/en/")>Java</a> <br>
+<a href="https://www.java.com/en/")>Java</a>
 </li>
 <li>
-<a href="https://www.selenium.dev/">Selenium</a> (Headless Browser) <br>
+<a href="https://www.selenium.dev/">Selenium</a> (Headless Browser)
 </li>
 </ul>
 
