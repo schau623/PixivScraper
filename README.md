@@ -51,7 +51,7 @@ User login with username and password <br>
 Saves user login credentials in a properties file on local storage for automatic login <br>
 </li>
 <li>
-Downloads all posts (saved as image files) from a specified Pixiv account using their Pixiv id <br>
+Downloads all illustrations (saved as image files) from a specified Pixiv account using their Pixiv id <br>
 </li>
 </ul>
 
@@ -67,16 +67,17 @@ Avoid downloading too many images (hundreds - thousands) in one session as makin
 
 ## Requirement(s) <br>
 <ul>
-<li><a href="https://www.java.com/en/")>Java version 8</a></li> <br>
+<li><a href="https://www.java.com/en/")>Java version 8</a></li>
+<li><a href ="https://www.google.com/chrome/" >Google Chrome</a>
 </ul>
 
 ## Created Using:
 <ul>
 <li>
-<a href="https://www.java.com/en/")>Java</a> <br>
+<a href="https://www.java.com/en/")>Java</a>
 </li>
 <li>
-<a href="https://www.selenium.dev/">Selenium</a> (Headless Browser) <br>
+<a href="https://www.selenium.dev/">Selenium</a> (Headless Browser)
 </li>
 </ul>
 
