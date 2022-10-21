@@ -16,15 +16,12 @@ import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpResponse;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -53,8 +50,8 @@ public class ParseHtmlPixiv {
         loginWithConfig();
         //loginSuccess = true;
         if(loginSuccess == false) {
-            System.out.println("Press any key to exit.");
-            sc.nextLine();
+            //System.out.println("Press any key to exit.");
+            //sc.nextLine();
             sc.close();
             //driver.close();
             driver.quit();
@@ -123,7 +120,7 @@ public class ParseHtmlPixiv {
     private void setup() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless"); //disable browser window
+        //options.addArguments("--headless"); //disable browser window
         driver = new ChromeDriver(options);
         
         //WebDriverManager.firefoxdriver().setup();
@@ -241,7 +238,7 @@ public class ParseHtmlPixiv {
         downloadAllPosts(url, dest, page);
     }
 
-    public void downloadPost(String url, String dest) {
+    private void downloadPost(String url, String dest) {
         driver.get(url);
         try {
             //WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".sc-1qpw8k9-3.eFhoug.gtm-expand-full-size-illust")));
@@ -285,9 +282,10 @@ public class ParseHtmlPixiv {
             //System.out.println("GET");
         }
         catch (Exception e) {
-            driver.close();
-            driver.quit();
-            System.err.println(e);
+            System.out.println("Failed to find image - " + e);
+            System.out.println("Continuing...");
+            return;
+            //System.err.println(e);
         }
     }
 

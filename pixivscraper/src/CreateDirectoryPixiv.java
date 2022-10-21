@@ -3,8 +3,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.openqa.selenium.support.ui.ExpectedCondition;
-
 /*
  * Creates a new folder at the specified directory
  * Folder name is based off the Pixiv id found in the url
