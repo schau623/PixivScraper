@@ -61,7 +61,7 @@ Downloads all illustrations (saved as image files) from a specified Pixiv accoun
 Sometimes attempts to login will fail. This is likely due to captcha checks. If this occurs, try logging in again or wait a while before attempting another login.
 </li>
 <li>
-Avoid downloading too many images (hundreds - thousands) in one session as making an excessive amount of requests may result in a temporary or even permanent I.P. ban.
+Avoid downloading too many images (~thousands) in one session or over a long period of time as making an excessive amount of requests may result in a temporary or even permanent I.P. ban.
 </li>
 </ul>
 
