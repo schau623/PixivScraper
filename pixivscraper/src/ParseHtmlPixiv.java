@@ -71,6 +71,9 @@ public class ParseHtmlPixiv {
         sc.close();
         //driver.close();
         driver.quit();
+        configProp = null;
+        directory = null;
+        prop = null;
         System.exit(0);
     }
 
@@ -327,7 +330,7 @@ public class ParseHtmlPixiv {
             } 
         }
         else if(type == "recent") {
-            if(page >= 2) {
+            if(page >= 4) {
                 return;
             }
 
@@ -352,8 +355,13 @@ public class ParseHtmlPixiv {
             postURLs.add(postURL);
         }
         //System.out.println(postURLs.toString());
+        //WebElement postCount = driver.findElement(By.xpath("//div[@class='sc-1mr081w-0 gUquFP']//span"));
+        //int totalCount = Integer.parseInt(postCount.getText());
+        //int count = 0;
         for(String postURL : postURLs) {
             downloadPost(postURL,dest);
+            //count+=1;
+            //System.out.println(count + "/" + totalCount + " Downloaded");
         }
         url = url.substring(0, url.length()-1) + (page+=1);
         //System.out.println(url + ", " + page);
