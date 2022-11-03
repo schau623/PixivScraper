@@ -45,13 +45,16 @@ https://user-images.githubusercontent.com/61481240/196570053-cddde099-a191-42a4-
 ## Features <br>
 <ul>
 <li>
-User login with username and password <br>
+User login with username and password
 </li>
 <li>
-Saves user login credentials in a properties file on local storage for automatic login <br>
+Saves user login credentials in a properties file on local storage for automatic login
 </li>
 <li>
-Downloads all illustrations (saved as image files) from a specified Pixiv account using their Pixiv id <br>
+Downloads all illustrations (saved as image files) from a specified Pixiv account using their Pixiv id
+</li>
+<li>
+Downloads first 3 pages of recently uploaded works by artists you're following
 </li>
 </ul>
 
