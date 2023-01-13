@@ -318,13 +318,13 @@ public class ParseHtmlPixiv {
             //WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//section[@class='sc-jgyytr-0 buukZm']")));
             try {
                 WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated
-                (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-iJCRrE hizmCn']")));
+                (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-dFRpbK kJZXgj']")));
             }
             catch(Exception e) {
                 return;
             }
             posts = driver.findElements
-            (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-iJCRrE hizmCn']"));
+            (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY sc-dFRpbK kJZXgj']"));
             if(posts.size() == 0) {
                 return;
             } 
@@ -336,13 +336,13 @@ public class ParseHtmlPixiv {
 
             try {
                 WebElement wait = new WebDriverWait(driver, Duration.ofSeconds(10)).until(ExpectedConditions.visibilityOfElementLocated
-                (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-iJCRrE hizmCn']")));
+                (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-dFRpbK kJZXgj']")));
             }
             catch(Exception e) {
                 return;
             }
             posts = driver.findElements
-            (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-iJCRrE hizmCn']"));
+            (By.xpath("//a[@class='sc-d98f2c-0 sc-rp5asc-16 iUsZyY gtm-followlatestpage-thumbnail-link sc-dFRpbK kJZXgj']"));
 
             if(posts.size() == 0) {
                 return;
